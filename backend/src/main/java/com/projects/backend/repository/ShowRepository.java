@@ -1,0 +1,7 @@
+package com.projects.backend.repository;
+
+import com.projects.backend.enitiy.Show;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface ShowRepository extends JpaRepository<Show, Long> {
+}
