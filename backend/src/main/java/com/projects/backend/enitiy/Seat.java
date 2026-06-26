@@ -12,15 +12,17 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"rowName", "seatNumber"}))
 public class Seat {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String rowName;
 
+    @Column(nullable = false)
     private Integer seatNumber;
 
     @Enumerated(EnumType.STRING)
