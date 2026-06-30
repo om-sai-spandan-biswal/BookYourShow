@@ -24,6 +24,6 @@ public class Theater {
 
     private String address;
 
-    @OneToMany(mappedBy = "theater")
+    @OneToMany(mappedBy = "theater", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Screen> screens = new ArrayList<>();
 }
