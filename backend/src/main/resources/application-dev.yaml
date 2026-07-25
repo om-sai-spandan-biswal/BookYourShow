@@ -1,0 +1,20 @@
+server:
+  port: 8081
+  servlet:
+    context-path: /api/v1
+
+spring:
+  datasource:
+    url: jdbc:postgresql://ep-shy-rain-aqrm2jzh-pooler.c-8.us-east-1.aws.neon.tech/neondb?user=neondb_owner&password=npg_5cAXpm2HuoDP&sslmode=require&channelBinding=require
+#    url: jdbc:postgresql://127.0.0.1:5432/test
+#    username: postgres
+#    password: Postgresql@Om123
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+      dialect: {org.hibernate.dialect.PostgreSQLDialect}
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
