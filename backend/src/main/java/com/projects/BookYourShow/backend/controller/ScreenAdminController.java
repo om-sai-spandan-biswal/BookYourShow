@@ -2,17 +2,24 @@ package com.projects.BookYourShow.backend.controller;
 
 import com.projects.BookYourShow.backend.dto.ScreenRequest;
 import com.projects.BookYourShow.backend.dto.ScreenResponse;
+import com.projects.BookYourShow.backend.dto.SeatRequest;
+import com.projects.BookYourShow.backend.dto.SeatResponse;
 import com.projects.BookYourShow.backend.service.ScreenService;
+import com.projects.BookYourShow.backend.service.SeatService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping(path = "/admin/screens")
 @RequiredArgsConstructor
 public class ScreenAdminController {
     private final ScreenService screenService;
+    private final SeatService seatService;
 
 
     @PutMapping("/{screenId}")
@@ -30,5 +37,34 @@ public class ScreenAdminController {
     {
         screenService.deleteScreen(screenId);
         return ResponseEntity.noContent().build();
+    }
+
+    //Seats
+
+    @GetMapping("/{screenId}/seats")
+    public ResponseEntity<List<SeatResponse>> getSeatsOfScreen(
+            @PathVariable Long screenId) {
+
+        return ResponseEntity.ok(seatService.getSeatsOfScreen(screenId));
+    }
+
+    @PostMapping("/{screenId}/seats")
+    public ResponseEntity<SeatResponse> createSeat(
+            @PathVariable Long screenId,
+            @Valid @RequestBody SeatRequest seatRequest) {
+
+        SeatResponse response = seatService.createSeat(screenId, seatRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PostMapping("/{screenId}/seats/bulk")
+    public ResponseEntity<List<SeatResponse>> createSeatsInBulk(
+            @PathVariable Long screenId,
+            @Valid @RequestBody List<SeatRequest> seatRequests) {
+
+        List<SeatResponse> response =
+                seatService.createSeatsInBulk(screenId, seatRequests);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }
