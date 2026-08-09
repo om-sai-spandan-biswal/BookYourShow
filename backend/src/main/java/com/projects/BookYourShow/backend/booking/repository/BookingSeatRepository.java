@@ -1,0 +1,7 @@
+package com.projects.BookYourShow.backend.booking.repository;
+
+import com.projects.BookYourShow.backend.booking.entity.BookingSeat;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface BookingSeatRepository extends JpaRepository<BookingSeat, Long> {
+}
