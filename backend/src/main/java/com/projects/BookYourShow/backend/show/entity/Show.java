@@ -8,6 +8,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,15 +34,17 @@ public class Show {
     @JoinColumn(name = "screen_id")
     private Screen screen;
 
+    @Column(nullable = false)
+    private LocalDate date;
+
+    @Column(nullable = false)
     private LocalDateTime startTime;
 
+    @Column(nullable = false)
     private LocalDateTime endTime;
 
     @Column(precision = 10, scale = 2)
     private BigDecimal basePrice;
-
-    @OneToMany(mappedBy = "show")
-    private List<ShowSeat> showSeats = new ArrayList<>();
 
     @CreationTimestamp
     private LocalDateTime createdAt;

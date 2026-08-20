@@ -40,6 +40,9 @@ public class Movie {
     @OneToMany(mappedBy = "movie")
     private List<Show> shows = new ArrayList<>();
 
+    @Column(nullable = false)
+    private boolean deleted;
+
     @CreationTimestamp
     private LocalDateTime createdAt;
     @UpdateTimestamp

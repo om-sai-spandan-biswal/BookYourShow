@@ -19,9 +19,10 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"rowName", "seatNumber"}))
+@Table(uniqueConstraints = @UniqueConstraint(
+        name = "screen_row_seat_unique",
+        columnNames = {"screen_id","rowName", "seatNumber"}))
 public class Seat {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -38,9 +39,6 @@ public class Seat {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "screen_id")
     private Screen screen;
-
-    @OneToMany(mappedBy = "seat")
-    private List<ShowSeat> showSeats = new ArrayList<>();
 
     @CreationTimestamp
     private LocalDateTime createdAt;

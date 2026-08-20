@@ -30,7 +30,8 @@ public class Theater {
     @Column(nullable = false)
     private String address;
 
-    private Boolean active;
+    @Column(nullable = false)
+    private boolean active;
 
     @CreationTimestamp
     private LocalDateTime createdAt;

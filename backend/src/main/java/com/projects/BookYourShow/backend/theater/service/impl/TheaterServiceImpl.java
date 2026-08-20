@@ -63,7 +63,7 @@ public class TheaterServiceImpl implements TheaterService {
         log.info("Activating Theater with ID {}", theaterId);
         Theater theater = theaterRepository.findById(theaterId)
                 .orElseThrow(() -> new ResourceNotFoundException("Theater Not Exist with ID "+theaterId)) ;
-        if(theater.getActive()) throw new RuntimeException("Hotel Already Activated");
+        if(theater.isActive()) throw new RuntimeException("Hotel Already Activated");
         theater.setActive(true);
         theaterRepository.save(theater);
         log.info("Activated Theater with ID {}", theater.getId());

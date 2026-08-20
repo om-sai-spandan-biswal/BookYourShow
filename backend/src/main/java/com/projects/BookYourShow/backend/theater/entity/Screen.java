@@ -22,14 +22,12 @@ public class Screen {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
-    private Integer totalSeats;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "theater_id", nullable = false)
     private Theater theater;
 
-    private Boolean closed;
+    @Column(nullable = false)
+    private boolean closed;
 
     @CreationTimestamp
     private LocalDateTime createdAt;

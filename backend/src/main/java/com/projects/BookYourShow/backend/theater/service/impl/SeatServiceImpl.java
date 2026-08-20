@@ -25,13 +25,21 @@ public class SeatServiceImpl implements SeatService {
     private final ScreenRepository screenRepository;
 
     @Override
-    public List<SeatResponse> getSeatsOfScreen(Long screenId) {
-        log.info("Getting seats of screen with id {}", screenId);
+    public List<SeatResponse> findSeatsOdScreen(Long screenId) {
         Screen screen = screenRepository.findById(screenId)
                 .orElseThrow(() -> new ResourceNotFoundException("Screen not found"));
 
         List<Seat> seats = seatRepository.findByScreen(screen);
-        return seats.stream().map(seatMapper::toResponse).toList() ;
+        return seats.stream().map(seatMapper::toResponse).toList();
+    }
+
+    @Override
+    public List<Seat> getSeatsOfScreen(Long screenId) {
+        log.info("Getting seats of screen with id {}", screenId);
+        Screen screen = screenRepository.findById(screenId)
+                .orElseThrow(() -> new ResourceNotFoundException("Screen not found"));
+
+        return seatRepository.findByScreen(screen);
     }
 
     @Override

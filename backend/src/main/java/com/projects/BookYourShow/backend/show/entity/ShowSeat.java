@@ -7,8 +7,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.LocalDate;
 
 @Entity
 @Table(
@@ -20,17 +19,19 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class ShowSeat {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "show_id")
+    @JoinColumn(name = "show_id",nullable = false)
     private Show show;
 
+    @Column(nullable = false)
+    private LocalDate date;
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "seat_id")
+    @JoinColumn(name = "seat_id",nullable = false)
     private Seat seat;
 
     @Column(precision = 10, scale = 2)
@@ -38,7 +39,4 @@ public class ShowSeat {
 
     @Enumerated(EnumType.STRING)
     private ShowSeatStatus status;
-
-    @OneToMany(mappedBy = "showSeat")
-    private List<BookingSeat> bookingSeats = new ArrayList<>();
 }

@@ -42,10 +42,10 @@ public class ScreenAdminController {
     //Seats
 
     @GetMapping("/{screenId}/seats")
-    public ResponseEntity<List<SeatResponse>> getSeatsOfScreen(
-            @PathVariable Long screenId) {
-
-        return ResponseEntity.ok(seatService.getSeatsOfScreen(screenId));
+    public ResponseEntity<List<SeatResponse>> getAllSeatsOfScreen(
+            @PathVariable Long screenId)
+    {
+        return ResponseEntity.ok(seatService.findSeatsOdScreen(screenId));
     }
 
     @PostMapping("/{screenId}/seats")

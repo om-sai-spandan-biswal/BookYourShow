@@ -25,6 +25,12 @@ public class ScreenServiceImpl implements ScreenService {
     private final ScreenMapper screenMapper;
 
     @Override
+    public Screen getScreen(Long screenId) {
+        return screenRepository.findById(screenId)
+                .orElseThrow(() -> new ResourceNotFoundException("Screen Not Exist with ID "+screenId));
+    }
+
+    @Override
     public List<ScreenResponse> getAllScreensOfTheater(Long theaterId) {
         log.info("Getting Screens of Theater with ID {}", theaterId);
         Theater theater = theaterRepository.findById(theaterId)
@@ -57,7 +63,6 @@ public class ScreenServiceImpl implements ScreenService {
         Screen screen = screenRepository.findById(screenId)
                 .orElseThrow(() -> new ResourceNotFoundException("Screen Not Exist with ID "+screenId));
         screen.setName(request.name());
-        screen.setTotalSeats(request.totalSeats());
         screen = screenRepository.save(screen);
         log.info("Updated Screen with ID {}", screen.getId());
         return screenMapper.toResponse(screen);
