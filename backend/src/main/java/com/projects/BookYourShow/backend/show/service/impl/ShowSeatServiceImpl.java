@@ -28,7 +28,6 @@ public class ShowSeatServiceImpl implements ShowSeatService {
         for (Seat seat : seats) {
             ShowSeat showSeat = ShowSeat.builder()
                     .show(show)
-                    .date(show.getDate())
                     .price(show.getBasePrice()) // TODO change dynamic price
                     .status(ShowSeatStatus.AVAILABLE)
                     .seat(seat)

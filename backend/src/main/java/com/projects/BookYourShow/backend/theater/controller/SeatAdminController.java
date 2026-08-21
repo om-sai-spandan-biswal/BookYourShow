@@ -23,11 +23,11 @@ public class SeatAdminController {
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/{seatId}")
-    public ResponseEntity<Void> deleteSeat(
-            @PathVariable Long seatId) {
-
-        seatService.deleteSeat(seatId);
-        return ResponseEntity.noContent().build();
-    }
+//    @DeleteMapping("/{seatId}")
+//    public ResponseEntity<Void> deleteSeat(
+//            @PathVariable Long seatId) {
+//
+//        seatService.deleteSeat(seatId);
+//        return ResponseEntity.noContent().build();
+//    }
 }

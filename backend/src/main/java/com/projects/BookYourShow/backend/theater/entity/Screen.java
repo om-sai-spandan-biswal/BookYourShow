@@ -27,7 +27,7 @@ public class Screen {
     private Theater theater;
 
     @Column(nullable = false)
-    private boolean closed;
+    private boolean active;
 
     @CreationTimestamp
     private LocalDateTime createdAt;

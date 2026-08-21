@@ -51,7 +51,7 @@ public class ScreenServiceImpl implements ScreenService {
                 .orElseThrow(() -> new ResourceNotFoundException("Theater Not Exist with ID "+theaterId)) ;
         Screen screen = screenMapper.toEntity(request);
         screen.setTheater(theater);
-        screen.setClosed(false);
+        screen.setActive(false);
         screen = screenRepository.save(screen);
         log.info("Created Screen with ID {}", screen.getId());
         return screenMapper.toResponse(screen);
@@ -73,7 +73,8 @@ public class ScreenServiceImpl implements ScreenService {
         log.info("Deleting screen with ID {}", screenId);
         Screen screen = screenRepository.findById(screenId)
                 .orElseThrow(() -> new ResourceNotFoundException("Screen Not Exist with ID "+screenId));
-        screenRepository.delete(screen);
+        screen.setActive(true);
+        screen = screenRepository.save(screen);
         log.info("Deleted screen with ID {}", screen.getId());
     }
 }

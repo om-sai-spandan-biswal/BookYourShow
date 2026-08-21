@@ -13,7 +13,9 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -29,8 +31,14 @@ public class Movie {
     @Column(nullable = false)
     private String title;
 
+    @ElementCollection
+    @CollectionTable(
+            name = "movie_genres",
+            joinColumns = @JoinColumn(name = "movie_id")
+    )
     @Enumerated(EnumType.STRING)
-    private List<Genre> genres = new ArrayList<>();
+    @Column(name = "genre")
+    private Set<Genre> genres = new HashSet<>();
 
     private Double duration;
 

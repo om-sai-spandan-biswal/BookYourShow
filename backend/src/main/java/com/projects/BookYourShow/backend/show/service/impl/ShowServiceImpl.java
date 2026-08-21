@@ -2,6 +2,7 @@ package com.projects.BookYourShow.backend.show.service.impl;
 
 import com.projects.BookYourShow.backend.movie.entity.Movie;
 import com.projects.BookYourShow.backend.movie.service.MovieService;
+import com.projects.BookYourShow.backend.shared.exceptions.ConflictException;
 import com.projects.BookYourShow.backend.show.dto.ShowRequest;
 import com.projects.BookYourShow.backend.show.dto.ShowResponse;
 import com.projects.BookYourShow.backend.show.entity.Show;
@@ -15,6 +16,9 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -39,11 +43,19 @@ public class ShowServiceImpl implements ShowService {
         Movie movie = movieService.getMovie(showRequest.movieId());
         Screen screen = screenService.getScreen(showRequest.screenId());
 
+        boolean existsOverlappingShow = showRepository.existsOverlappingShow(
+                screen.getId(),
+                showRequest.startTime().toLocalDate(),
+                showRequest.startTime(),
+                showRequest.endTime()) ;
+
+        if(existsOverlappingShow) throw new ConflictException("Show Overlaps with another Show");
+
         Show show = Show.builder()
                 .basePrice(showRequest.basePrice())
                 .movie(movie)
                 .screen(screen)
-                .date(showRequest.date())
+                .date(showRequest.startTime().toLocalDate())
                 .startTime(showRequest.startTime())
                 .endTime(showRequest.endTime())
                 .build() ;

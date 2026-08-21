@@ -8,7 +8,6 @@ public record ShowResponse(
         Long id,
         Long screenId,
         Long movieId,
-        LocalDate date,
         LocalDateTime startTime,
         LocalDateTime endTime,
         BigDecimal basePrice

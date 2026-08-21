@@ -74,7 +74,8 @@ public class TheaterServiceImpl implements TheaterService {
         log.info("Deleting Theater with ID {}", theaterId);
         Theater theater = theaterRepository.findById(theaterId)
                 .orElseThrow(() -> new ResourceNotFoundException("Theater Not Exist with ID "+theaterId)) ;
-        theaterRepository.delete(theater);  // TODO : applying Soft delete
+        if(theater.isActive()) theater.setActive(false);
+        theaterRepository.save(theater);
         log.info("Deleted Theater with ID {}", theater.getId());
 
     }

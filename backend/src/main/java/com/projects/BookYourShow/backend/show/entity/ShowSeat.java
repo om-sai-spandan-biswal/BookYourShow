@@ -27,9 +27,6 @@ public class ShowSeat {
     @JoinColumn(name = "show_id",nullable = false)
     private Show show;
 
-    @Column(nullable = false)
-    private LocalDate date;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "seat_id",nullable = false)
     private Seat seat;

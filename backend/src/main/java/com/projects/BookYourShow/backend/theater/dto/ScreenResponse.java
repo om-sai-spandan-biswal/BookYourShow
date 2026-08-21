@@ -4,5 +4,5 @@ public record ScreenResponse (
         Long id,
         String name,
         TheaterResponse theater,
-        Boolean closed
+        boolean active
 ) {}
