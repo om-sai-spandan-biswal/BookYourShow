@@ -8,11 +8,19 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/admin/movies")
 @RequiredArgsConstructor
 public class MovieAdminController {
     private final MovieService movieService;
+
+    @GetMapping
+    public ResponseEntity<List<MovieResponse>> findMovies()
+    {
+        return ResponseEntity.ok(movieService.findAllMovie());
+    }
 
     @GetMapping("/{movieId}")
     public ResponseEntity<MovieResponse> findMovie(

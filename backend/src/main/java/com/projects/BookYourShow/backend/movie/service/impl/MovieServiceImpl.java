@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -30,6 +32,11 @@ public class MovieServiceImpl implements MovieService {
                 .orElseThrow(() -> new ResourceNotFoundException("Movie Not Exist with ID "+movieId));
         if(movie.isDeleted()) throw new RuntimeException("Movie Already Deleted");
         return movieMapper.toResponse(movie);
+    }
+
+    @Override
+    public List<MovieResponse> findAllMovie() {
+        return movieRepository.findAll().stream().map(movieMapper::toResponse).toList();
     }
 
     @Override
