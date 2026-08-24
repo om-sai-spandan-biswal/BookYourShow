@@ -1,8 +1,12 @@
 package com.projects.BookYourShow.backend.show.service.impl;
 
+import com.projects.BookYourShow.backend.shared.exceptions.ResourceNotFoundException;
+import com.projects.BookYourShow.backend.show.dto.ShowSeatResponse;
 import com.projects.BookYourShow.backend.show.entity.Show;
 import com.projects.BookYourShow.backend.show.entity.ShowSeat;
 import com.projects.BookYourShow.backend.show.enums.ShowSeatStatus;
+import com.projects.BookYourShow.backend.show.mapper.ShowSeatMapper;
+import com.projects.BookYourShow.backend.show.repository.ShowRepository;
 import com.projects.BookYourShow.backend.show.repository.ShowSeatRepository;
 import com.projects.BookYourShow.backend.show.service.ShowSeatService;
 import com.projects.BookYourShow.backend.theater.entity.Seat;
@@ -18,8 +22,10 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 public class ShowSeatServiceImpl implements ShowSeatService {
+    private final ShowRepository showRepository;
     private final ShowSeatRepository showSeatRepository;
     private final SeatService seatService;
+    private final ShowSeatMapper showSeatMapper;
 
     @Override
     public void createShowSeats(Show show) {
@@ -35,5 +41,20 @@ public class ShowSeatServiceImpl implements ShowSeatService {
             showSeats.add(showSeat);
         }
         showSeatRepository.saveAll(showSeats);
+    }
+
+    @Override
+    public List<ShowSeat> getShowSeats(List<Long> showSeatIds) {
+        return showSeatRepository.findAllById(showSeatIds);  // TODO optimize
+    }
+
+    @Override
+    public List<ShowSeatResponse> getShowSeatsOfShow(Long showId) {
+        Show show = showRepository.findById(showId)
+                        .orElseThrow(() -> new ResourceNotFoundException("Show Not Exist with ID "+showId));
+        return showSeatRepository.findByShow(show)
+                .stream()
+                .map(showSeatMapper::toResponse)
+                .toList();
     }
 }

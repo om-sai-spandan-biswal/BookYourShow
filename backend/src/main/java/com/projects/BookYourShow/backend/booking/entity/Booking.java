@@ -29,20 +29,17 @@ public class Booking {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @Column(nullable = false)
+    private Long showId;
+
     @Enumerated(EnumType.STRING)
     private BookingStatus status;
 
-    @Column(precision = 10, scale = 2)
+    @Column(precision = 10, scale = 2,nullable = false)
     private BigDecimal totalAmount;
 
-    @OneToMany(
-            mappedBy = "booking",
-            cascade = CascadeType.ALL
-    )
+    @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BookingSeat> bookingSeats = new ArrayList<>();
-
-    @OneToOne(mappedBy = "booking")
-    private Payment payment;
 
     @CreationTimestamp
     private LocalDateTime createdAt;

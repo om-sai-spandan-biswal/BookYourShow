@@ -5,6 +5,8 @@ import com.projects.BookYourShow.backend.theater.entity.Seat;
 import com.projects.BookYourShow.backend.show.enums.ShowSeatStatus;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -36,4 +38,9 @@ public class ShowSeat {
 
     @Enumerated(EnumType.STRING)
     private ShowSeatStatus status;
+
+    @CreationTimestamp
+    private LocalDate createdAt;
+    @UpdateTimestamp
+    private LocalDate updatedAt;
 }
