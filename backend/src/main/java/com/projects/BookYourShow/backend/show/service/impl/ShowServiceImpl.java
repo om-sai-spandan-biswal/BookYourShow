@@ -1,6 +1,7 @@
 package com.projects.BookYourShow.backend.show.service.impl;
 
 import com.projects.BookYourShow.backend.movie.dto.MovieResponse;
+import com.projects.BookYourShow.backend.movie.dto.MovieShowsResponse;
 import com.projects.BookYourShow.backend.movie.entity.Movie;
 import com.projects.BookYourShow.backend.movie.mapper.MovieMapper;
 import com.projects.BookYourShow.backend.movie.service.MovieService;
@@ -8,12 +9,14 @@ import com.projects.BookYourShow.backend.shared.exceptions.ConflictException;
 import com.projects.BookYourShow.backend.shared.exceptions.ResourceNotFoundException;
 import com.projects.BookYourShow.backend.show.dto.ShowRequest;
 import com.projects.BookYourShow.backend.show.dto.ShowResponse;
+import com.projects.BookYourShow.backend.show.dto.TheaterShowsResponse;
 import com.projects.BookYourShow.backend.show.entity.Show;
 import com.projects.BookYourShow.backend.show.mapper.ShowMapper;
 import com.projects.BookYourShow.backend.show.repository.ShowRepository;
 import com.projects.BookYourShow.backend.show.service.ShowSeatService;
 import com.projects.BookYourShow.backend.show.service.ShowService;
 import com.projects.BookYourShow.backend.theater.entity.Screen;
+import com.projects.BookYourShow.backend.theater.entity.Theater;
 import com.projects.BookYourShow.backend.theater.service.ScreenService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +26,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -92,4 +100,37 @@ public class ShowServiceImpl implements ShowService {
         Page<Movie> movies = showRepository.findMoviesByCity(city,pageable);
         return movies.map(movieMapper::toResponse) ;
     }
+
+    @Override
+    public MovieShowsResponse findShows(Long movieId, String city, LocalDate date) {
+        Movie movie = movieService.getMovie(movieId) ;
+        List<Show> shows = showRepository.findShowsByMovieAndCityAndDate(movieId, city, date);
+
+        Map<Theater, List<Show>> showsByTheater = shows.stream()
+                .collect(Collectors.groupingBy(
+                        show -> show.getScreen().getTheater()));
+
+        List<TheaterShowsResponse> theaters = showsByTheater.entrySet()
+                .stream()
+                .map(entry -> {
+                    Theater theater = entry.getKey();
+
+                    List<ShowResponse> showResponses = entry.getValue()
+                            .stream()
+                            .map(showMapper::toResponse)
+                            .toList();
+
+                    return new TheaterShowsResponse(
+                            theater.getId(),
+                            theater.getName(),
+                            theater.getAddress(),
+                            showResponses);
+                }).toList();
+
+        return new MovieShowsResponse(
+                movieMapper.toResponse(movie),
+                date,
+                theaters);
+    }
+
 }

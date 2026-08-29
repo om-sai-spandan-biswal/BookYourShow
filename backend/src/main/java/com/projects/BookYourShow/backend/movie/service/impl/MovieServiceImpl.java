@@ -2,15 +2,20 @@ package com.projects.BookYourShow.backend.movie.service.impl;
 
 import com.projects.BookYourShow.backend.movie.dto.MovieRequest;
 import com.projects.BookYourShow.backend.movie.dto.MovieResponse;
+import com.projects.BookYourShow.backend.movie.dto.MovieShowsResponse;
 import com.projects.BookYourShow.backend.movie.entity.Movie;
 import com.projects.BookYourShow.backend.movie.mapper.MovieMapper;
 import com.projects.BookYourShow.backend.movie.repository.MovieRepository;
 import com.projects.BookYourShow.backend.movie.service.MovieService;
 import com.projects.BookYourShow.backend.shared.exceptions.ResourceNotFoundException;
+import com.projects.BookYourShow.backend.show.dto.TheaterShowsResponse;
+import com.projects.BookYourShow.backend.show.service.ShowService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -19,6 +24,7 @@ import java.util.List;
 public class MovieServiceImpl implements MovieService {
     private final MovieRepository movieRepository;
     private final MovieMapper movieMapper;
+    // private final ShowService showService; NOT DO THIS , make a dependency loop
 
     @Override
     public Movie getMovie(Long movieId) {
@@ -70,4 +76,5 @@ public class MovieServiceImpl implements MovieService {
         movie.setDeleted(true);
         movieRepository.save(movie);
     }
+
 }

@@ -31,6 +31,9 @@ public class Movie {
     @Column(nullable = false)
     private String title;
 
+//    @Column(nullable = false, unique = true)    // TODO for feature
+//    private String slug;
+
     @ElementCollection
     @CollectionTable(
             name = "movie_genres",

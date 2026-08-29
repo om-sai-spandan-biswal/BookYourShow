@@ -47,4 +47,18 @@ public interface ShowRepository extends JpaRepository<Show, Long> {
     Page<Movie> findMoviesByCity(
             @Param("city") String city,
             Pageable pageable);
+
+    @Query("""
+    SELECT s
+    FROM Show s
+    WHERE s.movie.id = :movieId
+      AND LOWER(s.screen.theater.city) = LOWER(:city)
+      AND s.date = :date
+    ORDER BY s.startTime
+""")
+    List<Show> findShowsByMovieAndCityAndDate(
+            @Param("movieId") Long movieId,
+            @Param("city") String city,
+            @Param("date") LocalDate date
+    );
 }
