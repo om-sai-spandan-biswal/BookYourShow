@@ -1,5 +1,6 @@
 package com.projects.BookYourShow.backend.booking.service.impl;
 
+import com.projects.BookYourShow.backend.auth.service.AuthService;
 import com.projects.BookYourShow.backend.booking.dto.BookingRequest;
 import com.projects.BookYourShow.backend.booking.dto.BookingResponse;
 import com.projects.BookYourShow.backend.booking.entity.Booking;
@@ -30,7 +31,7 @@ public class BookingServiceImpl implements BookingService {
     private final BookingMapper bookingMapper;
     private final ShowSeatService showSeatService;
     private final BookingSeatRepository bookingSeatRepository;
-    private final UserService userService;
+    private final AuthService authService;
 
     @Override
     @Transactional
@@ -47,9 +48,10 @@ public class BookingServiceImpl implements BookingService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         List<BookingSeat> bookingSeats = new ArrayList<>();
+        User user = authService.getCurrentUser() ;
 
         Booking booking = Booking.builder()
-                .user(getUser())
+                .user(user)
                 .showId(showId)
                 .totalAmount(totalAmount)
                 .status(BookingStatus.PENDING)
@@ -83,10 +85,4 @@ public class BookingServiceImpl implements BookingService {
 
     }
 
-    private User getUser() {
-        User user = new User("name", "email@email.com", "password"); // TODO get real user
-        User existedUser = userService.getUserByEmail(user.getEmail()) ;
-        if(existedUser != null) return existedUser;
-        return userService.saveUser(user);
-    }
 }

@@ -21,10 +21,10 @@ public class Role {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, unique = true)
-    private UserRole role;
+    private UserRole name;
 
-    public Role(UserRole role) {
-        this.role = role;
+    public Role(UserRole name) {
+        this.name = name;
     }
 
 }

@@ -1,24 +1,40 @@
 server:
-  port: 8081
+  port: ${PORT:8080}
   servlet:
     context-path: /api/v1
 
 spring:
   datasource:
-    url: jdbc:postgresql://127.0.0.1:5432/test
-    username: postgres
-    password: Postgresql@Om123
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASS}
   jpa:
     hibernate:
-      ddl-auto: update #create-drop
+      ddl-auto: update
       dialect: {org.hibernate.dialect.PostgreSQLDialect}
     show-sql: true
     properties:
       hibernate:
         format_sql: true
 
-jwt:
-  secret: ${JWT_SECRET}
-  access-token-lifetime: ${JWT_ACCESS_TOKEN_LIFETIME:600}
-  refresh-token-lifetime: ${JWT_REFRESH_TOKEN_LIFETIME:86400}
-  issuer: ${JWT_ISSUER}
+security:
+  jwt:
+    secret: ${JWT_SECRET}
+    access-token-lifetime: ${JWT_ACCESS_TOKEN_LIFETIME}
+    refresh-token-lifetime: ${JWT_REFRESH_TOKEN_LIFETIME}
+    issuer: ${JWT_ISSUER}
+  cookie:
+    refresh-token-cookie-name: ${JWT_REFRESH_COOKIE_NAME}
+    secure: false
+    http-only: true
+    same-site: lax
+
+app:
+  front-end-url: ${FRONTEND_URL}
+  domain: ${DOMAIN}
+
+payment:
+  razorpay:
+    key-id: ${RAZORPAY_ID}
+    key-secret: ${RAZORPAY_SECRET}
+    webhook-secret: ${RAZORPAY_WEBHOOK_SECRET}

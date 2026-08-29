@@ -1,5 +1,6 @@
 package com.projects.BookYourShow.backend.theater.service.impl;
 
+import com.projects.BookYourShow.backend.auth.service.AuthService;
 import com.projects.BookYourShow.backend.theater.dto.TheaterRequest;
 import com.projects.BookYourShow.backend.theater.dto.TheaterResponse;
 import com.projects.BookYourShow.backend.theater.entity.Theater;
@@ -21,6 +22,7 @@ public class TheaterServiceImpl implements TheaterService {
 
     private final TheaterRepository theaterRepository;
     private final TheaterMapper theaterMapper;
+    private final AuthService authService ;
 
     @Override
     public List<TheaterResponse> getTheaters() {
@@ -37,6 +39,7 @@ public class TheaterServiceImpl implements TheaterService {
     public TheaterResponse createTheater(TheaterRequest theaterRequest) {
         log.info("Creating new Theater");
         Theater theater = theaterMapper.toEntity(theaterRequest);
+        theater.setOwner(authService.getCurrentUser());
         theater = theaterRepository.save(theater);
         log.info("Created Theater with ID {}", theater.getId());
         return theaterMapper.toResponse(theater) ;

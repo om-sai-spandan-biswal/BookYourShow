@@ -1,5 +1,6 @@
 package com.projects.BookYourShow.backend.theater.entity;
 
+import com.projects.BookYourShow.backend.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -32,6 +33,10 @@ public class Theater {
 
     @Column(nullable = false)
     private boolean active;
+
+    @ManyToOne
+    @JoinColumn(nullable = false)
+    private User owner ;
 
     @CreationTimestamp
     private LocalDateTime createdAt;

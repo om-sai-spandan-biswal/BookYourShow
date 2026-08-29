@@ -21,6 +21,7 @@ import java.util.Set;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 public class User {
 
     @Id
@@ -50,9 +51,6 @@ public class User {
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
-    public User(String name, String email, String password) {
-        this.name = name;
-        this.email = email;
-        this.password = password;
-    }
+    @Column(nullable = false)
+    private Boolean enabled;
 }
