@@ -5,7 +5,7 @@ import com.projects.BookYourShow.backend.booking.dto.BookingResponse;
 
 public interface BookingService {
     BookingResponse bookShow(BookingRequest bookingRequest);
-    BookingResponse confirmBooking(Long bookingId);
+    void confirmBooking(Long bookingId);
     void cancelBooking(Long bookingId);
 
 }

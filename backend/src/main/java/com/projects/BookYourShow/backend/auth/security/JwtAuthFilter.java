@@ -9,8 +9,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -22,6 +24,7 @@ import java.io.IOException;
 public class JwtAuthFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final SecurityUserDetailsService securityUserDetailsService;
+    private final JwtAuthenticationEntryPoint authenticationEntryPoint;
 
     @Override
     protected void doFilterInternal(
@@ -42,7 +45,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 SecurityUserDetails userDetails = (SecurityUserDetails) securityUserDetailsService.
                         loadUserByUsername(jwtService.extractUsername(token));
 
-                if(userDetails.user().getEnabled() && SecurityContextHolder.getContext().getAuthentication() == null) {
+                if (!userDetails.isEnabled()) throw new DisabledException("User is disabled");
+                if(SecurityContextHolder.getContext().getAuthentication() == null) {
                     UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken
                             (userDetails, null, userDetails.getAuthorities());
 
@@ -52,9 +56,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 }
             }
-        } catch (JwtException e) {
+        } catch (JwtException | IllegalArgumentException e) {
             SecurityContextHolder.clearContext();
-            throw new BadCredentialsException(e.getMessage()) ;
+            authenticationEntryPoint.commence(request, response, new BadCredentialsException("Invalid token", e));
+            return;
+        } catch (AuthenticationException e) {
+            SecurityContextHolder.clearContext();
+            authenticationEntryPoint.commence(request, response, e);
+            return;
         }
         filterChain.doFilter(request, response);
     }

@@ -54,7 +54,7 @@ public class AuthServiceImpl implements AuthService {
                 signUpRequest.name(),
                 signUpRequest.email(),
                 password,
-                Set.of(roleService.getAdminRole()), //FIXME
+                Set.of(roleService.getUserRole()),
                 true
         ) ;
 
@@ -153,10 +153,13 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public User getCurrentUser() {
-        SecurityUserDetails user = (SecurityUserDetails)
-                Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication()).getPrincipal();
-        if(user == null) throw new BadCredentialsException("Please Login");
-        return user.user() ;
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()
+                || !(authentication.getPrincipal() instanceof SecurityUserDetails userDetails)
+                || !userDetails.isEnabled()) {
+            throw new BadCredentialsException("Please Login");
+        }
+        return userDetails.user();
     }
 
     private Optional<String> getRefreshTokenFromRequest(HttpServletRequest request) {

@@ -1,6 +1,7 @@
 package com.projects.BookYourShow.backend.auth.security;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpMethod;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -42,11 +43,11 @@ public class WebSecurityConfig{
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(AUTH_ADMIN_URLS).hasRole(ADMIN.name())
-                        .requestMatchers(AUTH_USER_URLS).hasRole(USER.name())
+                        .requestMatchers(AUTH_USER_URLS).hasAnyRole(USER.name(), ADMIN.name())
                         .requestMatchers(AUTH_PUBLIC_URLS).permitAll()
+                        .requestMatchers(HttpMethod.GET, AUTH_PUBLIC_READ_URLS).permitAll()
                         .anyRequest().authenticated()
                 ) ;
-;
         return http.build();
     }
 
