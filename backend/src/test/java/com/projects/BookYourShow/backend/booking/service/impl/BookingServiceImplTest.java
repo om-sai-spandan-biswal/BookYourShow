@@ -2,6 +2,10 @@ package com.projects.BookYourShow.backend.booking.service.impl;
 
 import com.projects.BookYourShow.backend.auth.service.AuthService;
 import com.projects.BookYourShow.backend.booking.entity.Booking;
+import com.projects.BookYourShow.backend.booking.dto.BookingRequest;
+import com.projects.BookYourShow.backend.booking.repository.BookingSeatRepository;
+import com.projects.BookYourShow.backend.show.service.ShowSeatService;
+import com.projects.BookYourShow.backend.show.entity.Show;
 import com.projects.BookYourShow.backend.booking.entity.BookingSeat;
 import com.projects.BookYourShow.backend.booking.enums.BookingStatus;
 import com.projects.BookYourShow.backend.booking.mapper.BookingMapper;
@@ -10,6 +14,7 @@ import com.projects.BookYourShow.backend.shared.exceptions.ConflictException;
 import com.projects.BookYourShow.backend.shared.exceptions.ResourceNotFoundException;
 import com.projects.BookYourShow.backend.show.entity.ShowSeat;
 import com.projects.BookYourShow.backend.show.enums.ShowSeatStatus;
+import com.projects.BookYourShow.backend.show.repository.ShowSeatRepository;
 import com.projects.BookYourShow.backend.user.entity.User;
 import com.projects.BookYourShow.backend.user.entity.Role;
 import com.projects.BookYourShow.backend.user.enums.UserRole;
@@ -23,6 +28,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -35,14 +41,75 @@ class BookingServiceImplTest {
     private BookingMapper bookingMapper;
     @Mock
     private AuthService authService;
+    @Mock
+    private ShowSeatRepository showSeatRepository;
+    @Mock
+    private ShowSeatService showSeatService;
+    @Mock
+    private BookingSeatRepository bookingSeatRepository;
     @InjectMocks
     private BookingServiceImpl bookingService;
+
+    @Test
+    void createsPendingBookingWithTotalAndLocksSeats() {
+        Show show = Show.builder().id(10L).build();
+        ShowSeat first = seat(ShowSeatStatus.AVAILABLE), second = seat(ShowSeatStatus.AVAILABLE);
+        first.setShow(show); second.setShow(show);
+        first.setPrice(new BigDecimal("200.00")); second.setPrice(new BigDecimal("250.00"));
+        List<Long> ids = List.of(first.getId(), second.getId());
+        User user = new User();
+        when(showSeatService.getShowSeats(ids)).thenReturn(List.of(first, second));
+        when(authService.getCurrentUser()).thenReturn(user);
+        when(bookingRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        bookingService.bookShow(new BookingRequest(ids));
+
+        assertEquals(ShowSeatStatus.LOCKED, first.getStatus());
+        assertEquals(ShowSeatStatus.LOCKED, second.getStatus());
+        verify(bookingMapper).toResponse(argThat(booking -> booking.getStatus() == BookingStatus.PENDING
+                && booking.getUser() == user && booking.getShowId().equals(10L)
+                && booking.getTotalAmount().equals(new BigDecimal("450.00"))
+                && booking.getBookingSeats().size() == 2
+                && booking.getBookingSeats().stream().allMatch(seat -> seat.getBooking() == booking)));
+        verify(bookingSeatRepository).saveAll(argThat(seats -> {
+            List<BookingSeat> values = new java.util.ArrayList<>(); seats.forEach(values::add);
+            return values.size() == 2 && values.get(0).getShowSeat() == first && values.get(1).getShowSeat() == second;
+        }));
+    }
+
+    @Test
+    void rejectsSeatsFromDifferentShowsBeforeCreatingBooking() {
+        ShowSeat first = seat(ShowSeatStatus.AVAILABLE), second = seat(ShowSeatStatus.AVAILABLE);
+        first.setShow(Show.builder().id(1L).build()); second.setShow(Show.builder().id(2L).build());
+        List<Long> ids = List.of(first.getId(), second.getId());
+        when(showSeatService.getShowSeats(ids)).thenReturn(List.of(first, second));
+
+        assertThrows(ConflictException.class, () -> bookingService.bookShow(new BookingRequest(ids)));
+
+        verifyNoInteractions(bookingRepository, bookingSeatRepository, authService);
+        assertEquals(ShowSeatStatus.AVAILABLE, first.getStatus());
+    }
+
+    @Test
+    void rejectsUnavailableSeatDuringBookingCreation() {
+        ShowSeat seat = seat(ShowSeatStatus.BOOKED);
+        seat.setShow(Show.builder().id(1L).build()); seat.setPrice(BigDecimal.TEN);
+        when(showSeatService.getShowSeats(List.of(seat.getId()))).thenReturn(List.of(seat));
+        when(bookingRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        assertThrows(ConflictException.class, () -> bookingService.bookShow(new BookingRequest(List.of(seat.getId()))));
+
+        assertEquals(ShowSeatStatus.BOOKED, seat.getStatus());
+        verifyNoInteractions(bookingSeatRepository, bookingMapper);
+    }
 
     @Test
     void confirmsPendingBookingAndAllLockedSeats() {
         ShowSeat first = seat(ShowSeatStatus.LOCKED);
         ShowSeat second = seat(ShowSeatStatus.LOCKED);
         Booking booking = booking(BookingStatus.PENDING, first, second);
+        when(showSeatRepository.findAndLockAvailableShowSeats(List.of(first.getId(), second.getId())))
+                .thenReturn(List.of(first, second));
 
         bookingService.confirmBooking(1L);
 
@@ -87,12 +154,28 @@ class BookingServiceImplTest {
         ShowSeat locked = seat(ShowSeatStatus.LOCKED);
         ShowSeat available = seat(ShowSeatStatus.AVAILABLE);
         Booking booking = booking(BookingStatus.PENDING, locked, available);
+        when(showSeatRepository.findAndLockAvailableShowSeats(List.of(locked.getId(), available.getId())))
+                .thenReturn(List.of(locked));
 
         assertThrows(ConflictException.class, () -> bookingService.confirmBooking(1L));
 
         assertEquals(BookingStatus.PENDING, booking.getStatus());
         assertEquals(ShowSeatStatus.LOCKED, locked.getStatus());
         assertEquals(ShowSeatStatus.AVAILABLE, available.getStatus());
+        verifyNoInteractions(bookingMapper);
+    }
+
+    @Test
+    void rejectsSeatsAlreadyClaimedByAnotherConfirmation() {
+        ShowSeat seat = seat(ShowSeatStatus.LOCKED);
+        Booking booking = booking(BookingStatus.PENDING, seat);
+        when(showSeatRepository.findAndLockAvailableShowSeats(List.of(seat.getId())))
+                .thenReturn(List.of());
+
+        assertThrows(ConflictException.class, () -> bookingService.confirmBooking(1L));
+
+        assertEquals(BookingStatus.PENDING, booking.getStatus());
+        assertEquals(ShowSeatStatus.LOCKED, seat.getStatus());
         verifyNoInteractions(bookingMapper);
     }
 
@@ -216,6 +299,8 @@ class BookingServiceImplTest {
     }
 
     private ShowSeat seat(ShowSeatStatus status) {
-        return ShowSeat.builder().status(status).build();
+        return ShowSeat.builder().id(nextSeatId++).status(status).build();
     }
+
+    private long nextSeatId = 1L;
 }

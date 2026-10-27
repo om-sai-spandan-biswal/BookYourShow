@@ -1,0 +1,26 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:bookyourshow-tests;DB_CLOSE_DELAY=-1;NON_KEYWORDS=VALUE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+security:
+  jwt:
+    secret: MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=
+    access-token-lifetime: 600
+    refresh-token-lifetime: 3600
+    issuer: test
+  cookie:
+    refresh-token-cookie-name: refresh
+    secure: false
+    http-only: true
+    same-site: Strict
+app:
+  front-end-url: http://localhost:3000
+  domain: localhost

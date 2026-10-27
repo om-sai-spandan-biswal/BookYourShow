@@ -14,6 +14,7 @@ import com.projects.BookYourShow.backend.shared.exceptions.ConflictException;
 import com.projects.BookYourShow.backend.shared.exceptions.ResourceNotFoundException;
 import com.projects.BookYourShow.backend.show.entity.ShowSeat;
 import com.projects.BookYourShow.backend.show.enums.ShowSeatStatus;
+import com.projects.BookYourShow.backend.show.repository.ShowSeatRepository;
 import com.projects.BookYourShow.backend.show.service.ShowSeatService;
 import com.projects.BookYourShow.backend.user.entity.User;
 import com.projects.BookYourShow.backend.user.enums.UserRole;
@@ -32,6 +33,7 @@ public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
     private final BookingMapper bookingMapper;
     private final ShowSeatService showSeatService;
+    private final ShowSeatRepository showSeatRepository;
     private final BookingSeatRepository bookingSeatRepository;
     private final AuthService authService;
 
@@ -92,13 +94,22 @@ public class BookingServiceImpl implements BookingService {
             throw new ConflictException("Only pending bookings can be confirmed");
         }
 
-        List<BookingSeat> bookingSeats = booking.getBookingSeats();
-        if (bookingSeats.isEmpty() || bookingSeats.stream()
-                .anyMatch(seat -> seat.getShowSeat().getStatus() != ShowSeatStatus.LOCKED)) {
+        List<Long> seatIds = booking.getBookingSeats().stream()
+                .map(seat -> seat.getShowSeat().getId())
+                .distinct()
+                .sorted()
+                .toList();
+        if (seatIds.isEmpty()) {
             throw new ConflictException("Booking seats must be locked before confirmation");
         }
 
-        bookingSeats.forEach(seat -> seat.getShowSeat().setStatus(ShowSeatStatus.BOOKED));
+        // Lock and validate in the database: another confirmation may have booked these seats.
+        List<ShowSeat> lockedSeats = showSeatRepository.findAndLockAvailableShowSeats(seatIds);
+        if (lockedSeats.size() != seatIds.size()) {
+            throw new ConflictException("One or more booking seats are no longer available for confirmation");
+        }
+
+        lockedSeats.forEach(seat -> seat.setStatus(ShowSeatStatus.BOOKED));
         booking.setStatus(BookingStatus.CONFIRMED);
 
         // The transaction persists changes to the managed booking and show seats together.

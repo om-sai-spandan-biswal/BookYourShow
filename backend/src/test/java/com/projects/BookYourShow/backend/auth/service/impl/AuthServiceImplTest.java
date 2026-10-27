@@ -76,4 +76,18 @@ class AuthServiceImplTest {
 
         assertSame(user, authService.getCurrentUser());
     }
+
+    @Test
+    void getCurrentUserRejectsDisabledUserAndUnexpectedPrincipal() {
+        User user = new User();
+        user.setEnabled(false);
+        SecurityUserDetails details = new SecurityUserDetails(user);
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(details, null, details.getAuthorities()));
+        assertThrows(BadCredentialsException.class, authService::getCurrentUser);
+
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken("unexpected", null, AuthorityUtils.NO_AUTHORITIES));
+        assertThrows(BadCredentialsException.class, authService::getCurrentUser);
+    }
 }
